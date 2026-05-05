@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, sans-serif; }
-#root { min-height: 100vh; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+#root {
+  min-height: 100vh;
+}
+
+/* Full calendar modifications */
+.fc-toolbar-title {
+  font-size: 18px !important;
+}
+
+.fc-button {
+  background-color: #0f172b !important;
+}
+
+.fc-day-today {
+  background-color: unset !important;
+}
