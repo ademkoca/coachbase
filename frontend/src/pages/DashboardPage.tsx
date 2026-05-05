@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Calendar, dateFnsLocalizer, type View } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
-import { enUS } from "date-fns/locale/en-US";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
 import { NewSessionModal } from "../components/NewSessionModal";
 import { EditSessionModal } from "../components/EditSessionModal";
 import { useClients, useCreateClient } from "../hooks/useClients";
@@ -13,19 +13,6 @@ import { useExpiringPayments } from "../hooks/usePayments";
 import { useStaleClients } from "../hooks/useStaleClients";
 import { useAuthStore } from "../store/authStore";
 import type { Session } from "../types/api";
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
-  getDay,
-  locales: { "en-US": enUS },
-});
-
-interface SlotInfo {
-  start: Date;
-  end: Date;
-}
 
 const BILLING_LABELS: Record<string, string> = {
   per_session: "Per session",
@@ -135,8 +122,6 @@ export default function DashboardPage() {
 
   const [showNewClient, setShowNewClient] = useState(false);
   const [showNewSession, setShowNewSession] = useState(false);
-  const [calDate, setCalDate] = useState(new Date());
-  const [calView, setCalView] = useState<View>("day");
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [pendingScheduledAt, setPendingScheduledAt] = useState("");
   const [pendingStartDate, setPendingStartDate] = useState("");
@@ -152,9 +137,8 @@ export default function DashboardPage() {
     status: "scheduled",
   });
 
-  function openModal(slot?: SlotInfo) {
-    const base = new Date(slot?.start ?? new Date());
-    const localDatetime = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(base.getDate()).padStart(2, "0")}T${String(base.getHours()).padStart(2, "0")}:${String(base.getMinutes()).padStart(2, "0")}`;
+  function openModal(start: Date = new Date()) {
+    const localDatetime = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}T${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
     setPendingScheduledAt(localDatetime);
     setPendingStartDate(localDatetime.slice(0, 10));
     setShowNewSession(true);
@@ -165,9 +149,9 @@ export default function DashboardPage() {
     title: s.title,
     start: new Date(s.scheduledAt),
     end: new Date(
-      new Date(s.scheduledAt).getTime() + s.durationMinutes * 60000,
+      new Date(s.scheduledAt).getTime() + s.durationMinutes * 60_000,
     ),
-    resource: s,
+    extendedProps: { resource: s },
   }));
 
   return (
@@ -216,26 +200,19 @@ export default function DashboardPage() {
         {/* Calendar — takes 2 cols */}
         <div className="lg:col-span-2">
           <h2 className="mb-3 text-lg font-semibold text-gray-800">Schedule</h2>
-          <div
-            className="rounded-xl bg-white p-4 shadow-sm"
-            style={{ height: 600 }}
-          >
-            <Calendar
-              localizer={localizer}
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="timeGridDay"
               events={events ?? []}
-              startAccessor="start"
-              endAccessor="end"
-              selectable
-              date={calDate}
-              view={calView}
-              defaultView="day"
-              onNavigate={setCalDate}
-              onView={setCalView}
-              onSelectSlot={openModal}
-              onSelectEvent={(event) =>
-                setEditingSession(event.resource as Session)
+              selectable={true}
+              select={(arg) => openModal(arg.start)}
+              dateClick={(arg) => openModal(arg.date)}
+              eventClick={(arg) =>
+                setEditingSession(arg.event.extendedProps.resource as Session)
               }
-              style={{ height: "100%" }}
+              height={600}
+              firstDay={1}
             />
           </div>
         </div>
