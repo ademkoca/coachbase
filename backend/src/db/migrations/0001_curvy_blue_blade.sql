@@ -1,0 +1,1 @@
+ALTER TABLE "trainers" ADD COLUMN "stale_client_threshold_days" integer DEFAULT 14 NOT NULL;
