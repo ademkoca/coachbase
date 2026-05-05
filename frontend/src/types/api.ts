@@ -48,6 +48,7 @@ export interface Client {
   goal?: string
   injuryNotes?: string
   avatarUrl?: string
+  status?: 'ACTIVE' | 'INACTIVE'
   createdAt: string
   updatedAt: string
 }

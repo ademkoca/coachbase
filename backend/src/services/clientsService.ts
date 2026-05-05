@@ -16,7 +16,7 @@ export async function getClient(trainerId: string, clientId: string) {
 
 export async function createClient(
   trainerId: string,
-  data: { name: string; email?: string; phone?: string; notes?: string; gender?: string; goal?: string; injuryNotes?: string; avatarUrl?: string }
+  data: { name: string; email?: string; phone?: string; notes?: string; gender?: string; goal?: string; injuryNotes?: string; avatarUrl?: string; status?: string }
 ) {
   const [client] = await db
     .insert(clients)
@@ -28,7 +28,7 @@ export async function createClient(
 export async function updateClient(
   trainerId: string,
   clientId: string,
-  data: Partial<{ name: string; email: string; phone: string; notes: string; gender: string; goal: string; injuryNotes: string; avatarUrl: string }>
+  data: Partial<{ name: string; email: string; phone: string; notes: string; gender: string; goal: string; injuryNotes: string; avatarUrl: string; status: string }>
 ) {
   const [client] = await db
     .update(clients)

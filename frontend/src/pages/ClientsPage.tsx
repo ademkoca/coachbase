@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   useClients,
@@ -18,6 +18,29 @@ export default function ClientsPage() {
   const [goal, setGoal] = useState("");
   const [injuryNotes, setInjuryNotes] = useState("");
   const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
+
+  const [search, setSearch] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const displayedClients = useMemo(() => {
+    let list = clients ?? [];
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter((c) => c.name.toLowerCase().includes(q));
+    }
+    if (genderFilter === "unspecified") list = list.filter((c) => !c.gender);
+    else if (genderFilter) list = list.filter((c) => c.gender === genderFilter);
+    if (statusFilter)
+      list = list.filter((c) => (c.status ?? "ACTIVE") === statusFilter);
+    return [...list].sort((a, b) =>
+      sortDir === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name),
+    );
+  }, [clients, search, genderFilter, statusFilter, sortDir]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -29,6 +52,7 @@ export default function ClientsPage() {
       goal: goal || undefined,
       injuryNotes: injuryNotes || undefined,
       notes: notes || undefined,
+      status,
     });
     setShowForm(false);
     setName("");
@@ -38,6 +62,7 @@ export default function ClientsPage() {
     setGoal("");
     setInjuryNotes("");
     setNotes("");
+    setStatus("ACTIVE");
   }
 
   return (
@@ -49,6 +74,42 @@ export default function ClientsPage() {
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
           + New client
+        </button>
+      </div>
+
+      {/* Search / Filter / Sort toolbar */}
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          type="search"
+          placeholder="Search by name…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="min-w-40 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        />
+        <select
+          value={genderFilter}
+          onChange={(e) => setGenderFilter(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        >
+          <option value="">All genders</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="unspecified">Unspecified</option>
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        >
+          <option value="">All statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+        <button
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          Name {sortDir === "asc" ? "↑" : "↓"}
         </button>
       </div>
 
@@ -111,6 +172,27 @@ export default function ClientsPage() {
                 </label>
               </div>
             </div>
+            <div>
+              <p className="mb-1.5 text-xs text-gray-500">Status</p>
+              <div className="flex gap-4 text-sm">
+                {(["ACTIVE", "INACTIVE"] as const).map((s) => (
+                  <label
+                    key={s}
+                    className="flex cursor-pointer items-center gap-1.5"
+                  >
+                    <input
+                      type="radio"
+                      name="status"
+                      value={s}
+                      checked={status === s}
+                      onChange={() => setStatus(s)}
+                      className="accent-indigo-600"
+                    />
+                    {s.charAt(0) + s.slice(1).toLowerCase()}
+                  </label>
+                ))}
+              </div>
+            </div>
             <input
               placeholder="Goal (e.g. lose weight, build muscle)"
               value={goal}
@@ -157,21 +239,24 @@ export default function ClientsPage() {
         <p className="text-gray-500">
           No clients yet. Add your first client above.
         </p>
+      ) : displayedClients.length === 0 ? (
+        <p className="text-gray-500">No clients match your filters.</p>
       ) : (
         <>
           {/* Table — sm and up */}
-          <div className="hidden sm:block overflow-hidden rounded-xl bg-white shadow-sm">
+          <div className="hidden overflow-hidden rounded-xl bg-white shadow-sm sm:block">
             <table className="w-full text-sm">
               <thead className="border-b border-gray-100 bg-gray-50 text-gray-600">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Name</th>
                   <th className="px-4 py-3 text-left font-medium">Email</th>
+                  <th className="px-4 py-3 text-left font-medium">Status</th>
                   <th className="px-4 py-3 text-left font-medium">Added</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {clients?.map((c) => (
+                {displayedClients.map((c) => (
                   <tr key={c.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <Link
@@ -183,6 +268,19 @@ export default function ClientsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {c.email ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                          (c.status ?? "ACTIVE") === "ACTIVE"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {(c.status ?? "ACTIVE") === "ACTIVE"
+                          ? "Active"
+                          : "Inactive"}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(c.createdAt).toLocaleDateString()}
@@ -205,8 +303,8 @@ export default function ClientsPage() {
           </div>
 
           {/* Card list — mobile */}
-          <ul className="sm:hidden space-y-2">
-            {clients?.map((c) => (
+          <ul className="space-y-2 sm:hidden">
+            {displayedClients.map((c) => (
               <li key={c.id} className="rounded-xl bg-white p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <Link
@@ -230,6 +328,22 @@ export default function ClientsPage() {
                     <dt className="w-14 text-gray-400">Email</dt>
                     <dd className="min-w-0 truncate text-gray-600">
                       {c.email ?? "—"}
+                    </dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="w-14 text-gray-400">Status</dt>
+                    <dd>
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                          (c.status ?? "ACTIVE") === "ACTIVE"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {(c.status ?? "ACTIVE") === "ACTIVE"
+                          ? "Active"
+                          : "Inactive"}
+                      </span>
                     </dd>
                   </div>
                   <div className="flex gap-2">

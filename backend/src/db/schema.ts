@@ -41,6 +41,7 @@ export const clients = pgTable('clients', {
   goal: text('goal'),
   injuryNotes: text('injury_notes'),
   avatarUrl: text('avatar_url'),
+  status: text('status').notNull().default('ACTIVE'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
