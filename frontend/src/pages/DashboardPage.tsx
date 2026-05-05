@@ -5,8 +5,9 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { NewSessionModal } from "../components/NewSessionModal";
+import { NewClientModal } from "../components/NewClientModal";
 import { EditSessionModal } from "../components/EditSessionModal";
-import { useClients, useCreateClient } from "../hooks/useClients";
+import { useClients } from "../hooks/useClients";
 import { useWorkoutPlans } from "../hooks/useWorkoutPlans";
 import { useSessions, useDeleteSession } from "../hooks/useSessions";
 import { useExpiringPayments } from "../hooks/usePayments";
@@ -41,77 +42,8 @@ function StatCard({
   );
 }
 
-function NewClientModal({ onClose }: { onClose: () => void }) {
-  const navigate = useNavigate();
-  const createClient = useCreateClient();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const client = await createClient.mutateAsync({
-      name,
-      email: email || undefined,
-    });
-    onClose();
-    navigate(`/clients/${client.id}`);
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">New client</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            ✕
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="mb-1 block text-xs text-gray-500">Name *</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-gray-500">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Optional"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-            />
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button
-              type="submit"
-              disabled={createClient.isPending}
-              className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {createClient.isPending ? "Creating…" : "Create client"}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const trainer = useAuthStore((s) => s.trainer);
   const { data: clients } = useClients();
   const { data: plans } = useWorkoutPlans();
@@ -350,9 +282,11 @@ export default function DashboardPage() {
         />
       )}
 
-      {showNewClient && (
-        <NewClientModal onClose={() => setShowNewClient(false)} />
-      )}
+      <NewClientModal
+        open={showNewClient}
+        onClose={() => setShowNewClient(false)}
+        onSuccess={(id) => navigate(`/clients/${id}`)}
+      />
       <NewSessionModal
         open={showNewSession}
         onClose={() => setShowNewSession(false)}

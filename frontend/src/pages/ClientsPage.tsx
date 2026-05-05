@@ -1,24 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  useClients,
-  useCreateClient,
-  useDeleteClient,
-} from "../hooks/useClients";
+import { useClients, useDeleteClient } from "../hooks/useClients";
+import { NewClientModal } from "../components/NewClientModal";
 
 export default function ClientsPage() {
   const { data: clients, isPending } = useClients();
-  const createClient = useCreateClient();
   const deleteClient = useDeleteClient();
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [gender, setGender] = useState("");
-  const [goal, setGoal] = useState("");
-  const [injuryNotes, setInjuryNotes] = useState("");
-  const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
+  const [showModal, setShowModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
@@ -42,40 +30,19 @@ export default function ClientsPage() {
     );
   }, [clients, search, genderFilter, statusFilter, sortDir]);
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    await createClient.mutateAsync({
-      name,
-      email: email || undefined,
-      phone: phone || undefined,
-      gender: gender || undefined,
-      goal: goal || undefined,
-      injuryNotes: injuryNotes || undefined,
-      notes: notes || undefined,
-      status,
-    });
-    setShowForm(false);
-    setName("");
-    setEmail("");
-    setPhone("");
-    setGender("");
-    setGoal("");
-    setInjuryNotes("");
-    setNotes("");
-    setStatus("ACTIVE");
-  }
-
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => setShowModal(true)}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
           + New client
         </button>
       </div>
+
+      <NewClientModal open={showModal} onClose={() => setShowModal(false)} />
 
       {/* Search / Filter / Sort toolbar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -84,7 +51,7 @@ export default function ClientsPage() {
           placeholder="Search by name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="min-w-40 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="min-w-40 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
         />
         <select
           value={genderFilter}
@@ -112,126 +79,6 @@ export default function ClientsPage() {
           Name {sortDir === "asc" ? "↑" : "↓"}
         </button>
       </div>
-
-      {showForm && (
-        <div className="mb-6 rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-gray-900">New client</h2>
-          <form onSubmit={handleCreate} className="space-y-3">
-            <input
-              placeholder="Full name *"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                placeholder="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-              />
-              <input
-                placeholder="Phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <p className="mb-1.5 text-xs text-gray-500">Gender</p>
-              <div className="flex gap-4 text-sm">
-                {(["male", "female"] as const).map((g) => (
-                  <label
-                    key={g}
-                    className="flex cursor-pointer items-center gap-1.5"
-                  >
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={g}
-                      checked={gender === g}
-                      onChange={() => setGender(g)}
-                      className="accent-indigo-600"
-                    />
-                    {g.charAt(0).toUpperCase() + g.slice(1)}
-                  </label>
-                ))}
-                <label className="flex cursor-pointer items-center gap-1.5 text-gray-400">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value=""
-                    checked={gender === ""}
-                    onChange={() => setGender("")}
-                    className="accent-indigo-600"
-                  />
-                  Not specified
-                </label>
-              </div>
-            </div>
-            <div>
-              <p className="mb-1.5 text-xs text-gray-500">Status</p>
-              <div className="flex gap-4 text-sm">
-                {(["ACTIVE", "INACTIVE"] as const).map((s) => (
-                  <label
-                    key={s}
-                    className="flex cursor-pointer items-center gap-1.5"
-                  >
-                    <input
-                      type="radio"
-                      name="status"
-                      value={s}
-                      checked={status === s}
-                      onChange={() => setStatus(s)}
-                      className="accent-indigo-600"
-                    />
-                    {s.charAt(0) + s.slice(1).toLowerCase()}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <input
-              placeholder="Goal (e.g. lose weight, build muscle)"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-            />
-            <textarea
-              placeholder="Injury notes"
-              value={injuryNotes}
-              onChange={(e) => setInjuryNotes(e.target.value)}
-              rows={2}
-              className="w-full rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-base placeholder-amber-400 focus:border-amber-400 focus:outline-none"
-            />
-            <textarea
-              placeholder="Notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none"
-            />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={createClient.isPending}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {isPending ? (
         <p className="text-gray-500">Loading...</p>
