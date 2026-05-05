@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import Sidebar from './Sidebar'
-import Logo from './Logo'
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import Logo from "./Logo";
 
 export default function AppShell() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -24,7 +24,7 @@ export default function AppShell() {
       {/* Mobile sidebar drawer */}
       <div
         className={`fixed inset-y-0 left-0 z-30 transition-transform duration-200 lg:hidden ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <Sidebar onClose={() => setSidebarOpen(false)} />
@@ -41,7 +41,7 @@ export default function AppShell() {
             ☰
           </button>
           <Logo size={22} className="mr-2 text-slate-900" />
-          <span className="font-semibold text-slate-900">FitTrainer</span>
+          <span className="font-semibold text-slate-900">Coachbase</span>
         </header>
 
         <main className="flex-1 overflow-y-auto p-6">
@@ -49,5 +49,5 @@ export default function AppShell() {
         </main>
       </div>
     </div>
-  )
+  );
 }
