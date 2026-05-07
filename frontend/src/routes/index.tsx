@@ -14,6 +14,7 @@ import SchedulePageRouter from '../pages/SchedulePageRouter'
 import SessionsPage from '../pages/SessionsPage'
 import SessionLogPage from '../pages/SessionLogPage'
 import GroupsPage from '../pages/GroupsPage'
+import MetricsPage from '../pages/MetricsPage'
 import SettingsPage from '../pages/SettingsPage'
 
 export const router = createBrowserRouter([
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { path: 'sessions', element: <SessionsPage /> },
       { path: 'sessions/:sessionId/log', element: <SessionLogPage /> },
       { path: 'groups', element: <GroupsPage /> },
+      { path: 'metrics', element: <MetricsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

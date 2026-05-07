@@ -17,6 +17,7 @@ import sessionsRouter from "./routes/sessions.js";
 import progressRouter from "./routes/progress.js";
 import paymentsRouter from "./routes/payments.js";
 import workoutLogsRouter from "./routes/workoutLogs.js";
+import metricsRouter from "./routes/metrics.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -61,10 +62,10 @@ app.get("/api/auth/me", requireAuth, async (req, res, next) => {
 app.patch("/api/auth/me", requireAuth, async (req, res, next) => {
   try {
     const { eq } = await import("drizzle-orm");
-    const { displayName, phone, bio, weightUnit, measurementUnit, feePerSession, feeMonthly, feeHalfYearly, feeYearly, staleClientThresholdDays } = req.body;
+    const { displayName, phone, bio, weightUnit, measurementUnit, feePerSession, feeMonthly, feeHalfYearly, feeYearly, staleClientThresholdDays, currency } = req.body;
     const [trainer] = await db
       .update(trainers)
-      .set({ displayName, phone, bio, weightUnit, measurementUnit, feePerSession, feeMonthly, feeHalfYearly, feeYearly, staleClientThresholdDays })
+      .set({ displayName, phone, bio, weightUnit, measurementUnit, feePerSession, feeMonthly, feeHalfYearly, feeYearly, staleClientThresholdDays, currency })
       .where(eq(trainers.id, req.trainerId))
       .returning();
     if (!trainer) return res.status(404).json({ error: "Trainer not found" });
@@ -100,6 +101,7 @@ app.use("/api/workout-plans", requireAuth, workoutPlansRouter);
 app.use("/api/groups", requireAuth, groupsRouter);
 app.use("/api/sessions", requireAuth, sessionsRouter);
 app.use("/api/workout-logs", requireAuth, workoutLogsRouter);
+app.use("/api/metrics", requireAuth, metricsRouter);
 
 app.use(errorHandler);
 

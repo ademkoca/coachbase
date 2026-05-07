@@ -11,6 +11,7 @@ const links = [
   { to: "/schedule", label: "Schedule", icon: "📅" },
   { to: "/sessions", label: "Sessions", icon: "⏱️" },
   { to: "/groups", label: "Groups", icon: "👥" },
+  { to: "/metrics", label: "Metrics", icon: "📊" },
 ];
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
