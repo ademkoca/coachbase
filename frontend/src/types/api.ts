@@ -11,6 +11,7 @@ export interface Trainer {
   feeHalfYearly?: string
   feeYearly?: string
   staleClientThresholdDays: number
+  currency?: 'USD' | 'EUR' | 'RSD'
   createdAt: string
 }
 

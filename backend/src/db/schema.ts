@@ -25,6 +25,7 @@ export const trainers = pgTable('trainers', {
   feeHalfYearly: numeric('fee_half_yearly', { precision: 10, scale: 2 }),
   feeYearly: numeric('fee_yearly', { precision: 10, scale: 2 }),
   staleClientThresholdDays: integer('stale_client_threshold_days').notNull().default(14),
+  currency: text('currency').notNull().default('USD'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

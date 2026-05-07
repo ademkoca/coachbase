@@ -13,6 +13,8 @@ import { useWorkoutPlans } from "../hooks/useWorkoutPlans";
 import { useAuthStore } from "../store/authStore";
 import { auth } from "../firebase";
 import type { BillingType } from "../types/api";
+import { formatCurrency } from "../lib/currency";
+import type { Currency } from "../lib/currency";
 
 const BILLING_LABELS: Record<BillingType, string> = {
   per_session: "Per session",
@@ -213,7 +215,7 @@ function PaymentsPanel({ clientId }: { clientId: string }) {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">${p.amount}</span>
+                  <span className="font-medium text-gray-900">{formatCurrency(p.amount, (trainer?.currency ?? "USD") as Currency)}</span>
                   <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
                     {BILLING_LABELS[p.billingType as BillingType]}
                   </span>

@@ -26,6 +26,9 @@ export default function SettingsPage() {
   const [staleClientThresholdDays, setStaleClientThresholdDays] = useState(
     String(trainer?.staleClientThresholdDays ?? 14),
   );
+  const [currency, setCurrency] = useState<"USD" | "EUR" | "RSD">(
+    trainer?.currency ?? "USD",
+  );
   const [saved, setSaved] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,6 +47,7 @@ export default function SettingsPage() {
         1,
         Number(staleClientThresholdDays) || 14,
       ),
+      currency,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -172,6 +176,27 @@ export default function SettingsPage() {
             Pre-filled when adding a payment record. You can still change the
             amount per record.
           </p>
+          <div className="mb-4">
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              Currency
+            </label>
+            <div className="flex gap-2">
+              {(["USD", "EUR", "RSD"] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCurrency(c)}
+                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+                    currency === c
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             {(
               [
